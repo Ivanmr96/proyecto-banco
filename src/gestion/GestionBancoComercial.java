@@ -15,6 +15,84 @@ public class GestionBancoComercial {
 
     /*
      * INTERFAZ
+     * Signatura: public boolean crearFicheroCuentaTransferencias(String nuevo_iban)
+     * Comentario: Crea un fichero de transferencias para el IBAN dado. Devuelve false si el fichero ya existe o si no se pudo crear. True si sí lo creó.
+     * Precondiciones: Se pasa un iban
+     * Entrada: String iban
+     * Salida: boolean
+     * Entrada/Salida:
+     * Postcondiciones: asociado al nombre devuelve false si el fichero ya existe o si no se pudo crear. True si sí lo creó.
+     * */
+    public boolean crearFicheroCuentaTransferencias(String nuevo_iban){
+        String nombreBanco = obtenerNombreBancoComercialPorIBAN(nuevo_iban);
+        File carpetaTransferencias = new File("./Files/BancosComerciales/"+nombreBanco+"/Transferencias/");
+        File ficheroCuentas = new File("./Files/BancosComerciales/"+nombreBanco+"/Cuentas_"+nombreBanco+"_Maestro.txt");
+        File fichero_nuevo = null;
+        FileReader fr = null;
+        BufferedReader br = null;
+        ObjectOutputStream oos = null;
+        String registro = " ";
+        String campos[] = null;
+        String IBANUltimaCuenta = " ";
+        String BIC = obtenerBICporIBAN(nuevo_iban);
+        String numeroCuentaUltima = " ";
+        String numeroCuenta = " ";
+        boolean exito = false;
+
+        //Ultima numero de cuenta
+        try
+        {
+            fr = new FileReader(ficheroCuentas);
+            br = new BufferedReader(fr);
+
+            while(br.ready())
+            {
+                registro = br.readLine();
+
+                if(br.ready() == false)
+                {
+                    campos = registro.split(",");
+                    if(campos != null)
+                        IBANUltimaCuenta = campos[0];
+                }
+            }
+
+            if(IBANUltimaCuenta == null)
+                IBANUltimaCuenta = "ESP" + BIC + "0000000";
+
+            br.close();
+            fr.close();
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        numeroCuentaUltima = this.obtenerNumCuentaPorIBAN(IBANUltimaCuenta);
+
+        numeroCuenta = String.valueOf((Integer.parseInt(numeroCuentaUltima) + 1));
+        fichero_nuevo = new File(carpetaTransferencias, "Transferencias_Cuenta_"+numeroCuenta+".dat");
+
+        //Crea el fichero
+        try{
+            oos = new ObjectOutputStream(new FileOutputStream(fichero_nuevo));
+            oos.close();
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+        if(fichero_nuevo.exists()){
+            exito = true;
+        }
+
+        return exito;
+
+    }
+
+
+
+    /*
+     * INTERFAZ
      * Signatura: public boolean isCuentaBorrada(String iban)
      * Comentario: Comprueba si el iban pertenece a una cuenta del fichero CuentasBorradas
      * Precondiciones: Se pasa un iban
@@ -49,7 +127,7 @@ public class GestionBancoComercial {
     /*
      * INTERFAZ
      * Signatura: public void marcarCuentaComoBorrada(String iban_cuenta)
-     * Comentario: Escribe en el fichero CuentasBorradas la cuenta indicada
+     * Comentario: Marca como borrada con * una cuenta
      * Precondiciones: Se pasa un iban
      * Entrada: String iban
      * Salida:
@@ -419,7 +497,7 @@ public class GestionBancoComercial {
             while (br.ready()){
                 registro = br.readLine();
 
-                if (registro.split(",")[0].equals(dni_cliente)){
+                if (registro.split(",")[0].equals(dni_cliente.toUpperCase())){
                     iban_cuenta = registro.split(",")[1];
                 }
             }
@@ -513,6 +591,7 @@ public class GestionBancoComercial {
         }catch ( IOException e ){
             e.printStackTrace();
         }
+        /*
         Path source = Paths.get(temp.getPath());
         Path dest = Paths.get(ficheroMovimientosCuenta.getPath());
         System.out.println("Existe carpeta destino: ->" + ficheroMovimientosCuenta.getParentFile().exists() );
@@ -532,7 +611,7 @@ public class GestionBancoComercial {
             e.printStackTrace();
         }
 
-
+*/
 
     }
 

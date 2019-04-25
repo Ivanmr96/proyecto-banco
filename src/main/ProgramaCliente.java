@@ -40,6 +40,7 @@ public class ProgramaCliente {
         int opcion, dia, mes, anyo;
         double cantidad;
         String iban_cuenta, iban_destino,concepto;
+        String mensajeUsuario;  //para almacenar mensajes de ayuda al usuario
         List<TransferenciaImpl> movimientos = new ArrayList<TransferenciaImpl>();
 
         //pedirValidarInicioSesion
@@ -54,14 +55,15 @@ public class ProgramaCliente {
                     concepto = validar.concepto();
                     cantidad = validar.cantidadATransferir();
                     fecha = new GregorianCalendar();
-                    gestion.realizarMovimiento(iban_cuenta,iban_destino,concepto,cantidad,fecha);
-                    System.out.println("Transferencia realizada con éxito");
+                    mensajeUsuario = (gestion.realizarMovimiento(iban_cuenta,iban_destino,concepto,cantidad,fecha))?"Transferencia realizada con éxito":"Problemas en su operación. Vuelva a intentarlo más tarde";
+
+                    System.out.println(mensajeUsuario);
 
                     break;
                 case 2:
                     //ver datos de la cuenta propia
                     System.out.println("Últimos diez movimientos de la cuenta:");
-                    gestion.ordenarMovimientosPorFecha(iban_cuenta);
+                    //gestion.ordenarMovimientosPorFecha(iban_cuenta); Este método no funciona por error documentado (delete y renameTo)
                     utilidad.imprimirMovimientos(gestion.ultimosDiezMovimientos(iban_cuenta));
 
                     break;
@@ -87,10 +89,14 @@ public class ProgramaCliente {
                 case 4:
                     //cancelar cuenta
                     if(validar.borrarCuenta()){
-                        gestion.marcarCuentaComoBorrada(iban_cuenta);
-                        System.out.println("Su cuenta ha sido borrada.");
-                        System.out.println("Se le forzará el cierre de sesión.");
-                        opcion = 0;
+                        if (gestion.eliminarCuenta(iban_cuenta)){
+                            System.out.println("Su cuenta ha sido borrada.");
+                            System.out.println("Se le forzará el cierre de sesión.");
+                            opcion = 0;
+                        }else{
+                            System.out.println("No se pudo eliminar su cuenta. Inténtelo de nuevo más tarde");
+                        }
+
                     }else{
                         System.out.println("No se borrará su cuenta.");
                     }
