@@ -428,14 +428,14 @@ public class GestionBancoCentral
     	boolean borrada = false;
         
         String registroCuenta = iban_cuenta + ",*\n";
-        String registroCliente = this.obtenerBICporIBAN(iban_cuenta) + ",*\n";
+        String registroCliente = "ESP" + this.obtenerBICporIBAN(iban_cuenta) + ",*\n";
         String registroClientesCuentas = "*," + iban_cuenta + "\n";
         
         if(IBANRegistrado(iban_cuenta))
         {
         	escribirRegistroEnFichero(registroCuenta, "./Files/BancoCentral/Cuentas_BancoCentral_Movimientos.txt");
         	escribirRegistroEnFichero(registroCliente, "./Files/BancoCentral/Clientes_BancoCentral_Movimientos.txt");
-        	escribirRegistroEnFichero(registroClientesCuentas, "./Files/BancosComerciales/"+obtenerNombreBancoComercialPorIBAN(iban_cuenta)+"/Clientes_Cuentas_"+obtenerNombreBancoComercialPorIBAN(iban_cuenta)+"_Movimientos.txt");
+        	escribirRegistroEnFichero(registroClientesCuentas, "./Files/BancoCentral/Clientes_Cuentas_BancoCentral_Movimientos.txt");
         	borrada = true;
         }
 
@@ -747,9 +747,14 @@ public class GestionBancoCentral
             //Leer primeros registros de ficheroMovimientos y ficheroMaestro
             String registroMovimientos = brMovimientos.readLine();
             String registroMaestro = brMaestro.readLine();
-
-            String campoClaveMovimientos = registroMovimientos.split(",")[posicionCampoClave];
-            String campoClaveMaestro = registroMaestro.split(",")[posicionCampoClave];
+            String campoClaveMovimientos = null;
+            String campoClaveMaestro = null;
+            
+            if(registroMovimientos != null && registroMaestro != null)
+            {
+	            campoClaveMovimientos = registroMovimientos.split(",")[posicionCampoClave];
+	            campoClaveMaestro = registroMaestro.split(",")[posicionCampoClave];
+            }
 
             //Mientras no sea fin de fichero en ninguno de los dos
             while(registroMovimientos != null && registroMaestro != null)
@@ -832,7 +837,8 @@ public class GestionBancoCentral
             bwMaestroAct.close();
 
             ficheroMaestro.delete();
-            ficheroMaestroAct.renameTo(ficheroMaestro);
+            if(ficheroMaestroAct.renameTo(ficheroMaestro))
+            	actualizado = true;
 
             ficheroMovimientos.delete();
             ficheroMovimientos.createNewFile();
